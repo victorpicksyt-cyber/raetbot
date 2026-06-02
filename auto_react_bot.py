@@ -35,9 +35,9 @@ EMOJI_WEIGHTS = {
     "💔": 2,
 }
 
-# بازه‌ی تأخیر بین ری‌اکشن‌ها (ثانیه)
-DELAY_MIN = 3
-DELAY_MAX = 20
+# بازه‌ی تأخیر بین ری‌اکشن‌ها (ثانیه) — کوتاه نگهش می‌داریم تا اجرای cron سریع تمام شود
+DELAY_MIN = 1
+DELAY_MAX = 6
 
 # چند تا از ربات‌ها روی هر پست ری‌اکشن بزنند (تصادفی بین این دو عدد)
 REACT_MIN = 9
@@ -178,9 +178,9 @@ def main():
 
 
 def run_once():
-    """فقط یک‌بار اجرا می‌شود: پست‌های جدید از آخرین اجرا را می‌گیرد،
-    ری‌اکشن می‌زند، آن‌ها را «تأیید» می‌کند و خارج می‌شود.
-    مناسب اجرای دوره‌ای روی cron / GitHub Actions (با RUN_ONCE=1)."""
+    """یک‌بار اجرا می‌شود (مناسب cron / GitHub Actions با RUN_ONCE=1).
+    اول پست‌های جدید را می‌گیرد و فوراً «تأیید» می‌کند (تا اگر اجرا نیمه‌کاره
+    کنسل شد، پست‌ها تلنبار نشوند)، و تازه بعد ری‌اکشن می‌زند."""
     tokens = load_tokens(TOKENS_FILE)
     listener = tokens[0]
     try:
@@ -193,8 +193,10 @@ def run_once():
         raise SystemExit(f"خطای شبکه: {e}")
 
     updates = resp.get("result", [])
+
+    # ۱) ابتدا فهرست پست‌های مربوط به کانال را جمع کن و آخرین offset را پیدا کن
+    targets = []
     last_offset = None
-    reacted = 0
     for u in updates:
         last_offset = u["update_id"] + 1
         post = u.get("channel_post")
@@ -203,11 +205,9 @@ def run_once():
         chat = post.get("chat", {})
         if chat.get("username", "").lower() != CHANNEL_USERNAME.lower():
             continue
-        print(f"پست جدید: {post['message_id']}")
-        react_all(tokens, chat["id"], post["message_id"])
-        reacted += 1
+        targets.append((chat["id"], post["message_id"]))
 
-    # تأیید آپدیت‌ها تا اجرای بعدی دوباره تحویل داده نشوند
+    # ۲) فوراً تأیید کن (قبل از بخش کند) تا کنسل‌شدنِ اجرا باعث تکرار نشود
     if last_offset is not None:
         try:
             requests.get(f"{API}{listener}/getUpdates",
@@ -215,7 +215,12 @@ def run_once():
         except requests.RequestException:
             pass
 
-    print(f"اجرای یک‌باره تمام شد. روی {reacted} پست ری‌اکشن زده شد.")
+    # ۳) حالا بخش کند: ری‌اکشن‌زدن با تأخیر
+    for chat_id, msg_id in targets:
+        print(f"پست جدید: {msg_id}")
+        react_all(tokens, chat_id, msg_id)
+
+    print(f"اجرای یک‌باره تمام شد. روی {len(targets)} پست ری‌اکشن زده شد.")
 
 
 if __name__ == "__main__":
