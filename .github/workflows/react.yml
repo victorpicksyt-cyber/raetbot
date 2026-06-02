@@ -31,3 +31,4 @@ jobs:
           BOT_TOKENS: ${{ secrets.BOT_TOKENS }}     # در Settings > Secrets ست می‌شود
           CHANNEL_USERNAME: RadioBulletin
         run: python auto_react_bot.py
+ 
