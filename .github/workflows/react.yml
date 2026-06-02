@@ -1,0 +1,33 @@
+# این فایل باید در مسیر  .github/workflows/react.yml  در مخزن قرار بگیرد.
+name: react to new posts
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'        # هر ۵ دقیقه (حداقل مجاز گیت‌هاب)
+  repository_dispatch:           # برای trigger از cron-job.org (رویداد react)
+    types: [react]
+  workflow_dispatch: {}          # برای اجرای دستی از داشبورد گیت‌هاب
+
+# اگر اجرای قبلی هنوز تمام نشده، اجرای جدید را صف نکن (جلوگیری از تداخل getUpdates)
+concurrency:
+  group: react
+  cancel-in-progress: false
+
+jobs:
+  react:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: run reaction script
+        env:
+          RUN_ONCE: '1'
+          BOT_TOKENS: ${{ secrets.BOT_TOKENS }}     # در Settings > Secrets ست می‌شود
+          CHANNEL_USERNAME: testbotaii
+        run: python auto_react_bot.py
