@@ -23,7 +23,7 @@ import requests
 TOKENS_FILE = "bot_tokens.txt"
 
 # یوزرنیم کانال بدون @ (روی host می‌توانی با متغیر محیطی CHANNEL_USERNAME عوضش کنی)
-CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "testbotaii")
+CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "RadioBulletin")
 
 # ایموجی‌ها همراه وزن: عدد بزرگ‌تر یعنی احتمال انتخاب بیشتر.
 # فقط ایموجی‌های فعالِ کانالت را بگذار. وزن‌ها واقعی‌تر نشانش می‌دهند.
