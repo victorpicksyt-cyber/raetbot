@@ -29,5 +29,5 @@ jobs:
         env:
           RUN_ONCE: '1'
           BOT_TOKENS: ${{ secrets.BOT_TOKENS }}     # در Settings > Secrets ست می‌شود
-          CHANNEL_USERNAME: testbotaii
+          CHANNEL_USERNAME: RadioBulletin
         run: python auto_react_bot.py
