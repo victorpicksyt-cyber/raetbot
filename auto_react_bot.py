@@ -30,6 +30,7 @@ CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "RadioBulletin")
 EMOJI_WEIGHTS = {
     "👍": 5,
     "❤️": 4,
+    "🤣": 4,
     "🔥": 3,
     "👎": 2,
     "💔": 2,
